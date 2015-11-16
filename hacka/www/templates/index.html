@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="" data-ng-app="GoogleDirection">
+
+<head>
+    <meta t="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angular Demo</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js" type="application/javascript"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=true"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <style>
+        #map-canvas {
+            width: 820px;
+            height: 420px;
+            padding-top: 25px;
+            padding-right: 50px;
+            padding-bottom: 25px;
+            padding-left: 50px;
+            background: #DBDBDB;
+        }
+        
+        .container {
+            background: #DBDBDB;
+        }
+        
+        .circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50px;
+            font-size: 50px;
+            color: #fff;
+            line-height: 100px;
+            text-align: center;
+            background: #0084B4
+        }
+        
+        p {
+            font-size: 30px
+        }
+        
+        .cardcontainer {
+            background: #dbdbdb;
+            width: 400px;
+            height: 420px;
+            overflow: scroll;
+        }
+        
+        .weatherModule {
+            width: 250px;
+            background-color: #33FFCC;
+        }
+        
+        .clear {
+            clear: both;
+        }
+        
+        .card {
+            width: 25em;
+            min-height: 14.5em;
+            background: #fff;
+            margin: 2em auto;
+            border-radius: .2em;
+            padding-top: 1em;
+            padding-left: 1em;
+            padding-right: 1em;
+        }
+        
+        .city {
+            font-family: Roboto;
+            font-weight: 300;
+            font-size: 1.8em;
+            color: #5b5b5b;
+        }
+        
+        .alert {
+            font-family: Roboto;
+            font-weight: 100;
+            font-size: 1.8em;
+            font-size: 1.8em;
+            color: #5b5b5b;
+        }
+        
+        .menu {
+            float: right;
+            font-family: Roboto;
+            font-size: .5em;
+            color: #5b5b5b;
+            margin-top: -.09em;
+            margin-right: -2em;
+            list-style: square;
+        }
+        
+        .sun {
+            width: 4em;
+            height: 4em;
+            border-radius: 2.5em;
+            background: #FBD80A;
+            margin-top: 1em;
+        }
+        
+        .temp {
+            float: right;
+            font-family: Roboto;
+            font-weight: 300;
+            font-size: 8.5em;
+            margin-top: -.75em;
+            color: #5b5b5b;
+        }
+        
+        .variations {
+            font-family: Roboto;
+            font-wight: 300;
+            color: #8c8c8c;
+            list-style: none;
+            margin-left: -2em;
+        }
+        
+        .mph {
+            font-size: .8em;
+        }
+        
+        .speed:before {
+            content: url('http://i.imgur.com/luN0Jmq.png');
+        }
+        
+        .forecast {
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .day {
+            display: block;
+            width: 21.5%;
+            height: 9em;
+            float: left;
+            margin: 0 .375em .5em;
+            text-align: center;
+            font-family: Roboto;
+            color: #5b5b5b;
+            border-right: .1em solid #d9d9d9;
+            line-height: 2;
+        }
+        
+        .fri {
+            border-right: none;
+        }
+        
+        .highTemp {
+            font-weight: bold;
+        }
+        
+        .lowTemp {
+            color: #8c8c8c;
+        }
+        
+        .cloudy {
+            content: url('http://i.imgur.com/0PIYfV8.png');
+        }
+        
+        .sunny {
+            content: url('http://i.imgur.com/RdBr2SD.png');
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrapp" ng-controller="googlemapoutput">
+        <p id='head'>Hey, </p>
+        <div class="row">
+            <br>
+
+            <div class="col-sm-6 col-md-6 col-md-offset-1">
+                <input type="text" class="form-control" placeholder="Starting location" ng-model="startlocation" id="startlocation" />
+                <br>
+                <input type="text" class="form-control" placeholder="Destination" id="endlocation" />
+                <div class="col-sm-6 col-md-5 col-md-offset-2">
+                    <br>
+                    <button id="btn" class="btn btn-lg btn-primary btn-block" ng-click="calcRoute()">
+                        Get Direction
+                    </button>
+                    <br>
+
+                </div>
+                <br/></br>
+            </div>
+            <div class="col-sm-4">
+                <div class="row">
+                    <div class="col-sm-3 col-md-6">
+                        <div id="temp1" class="circle">13c</div>
+                        <p id="loc1"></p>
+
+                    </div>
+                    <div class="col-sm-9 col-md-6">
+                        <div id="temp2" class="circle"> 9c</div>
+                        <p id="loc2"> </p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-1" id="map-canvas"></div>
+            <div class=" col-md-3"></div>
+            <div class="col-md-3" id="alerts">
+                <div id="cardcontainer" class="cardcontainer">
+                    <div class="card">
+                        <span class="city">Kansas City</span>
+                        <ul class="menu">
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                        </ul>
+                        <br>
+                        <div class="sun"></div>
+                        <span class="temp">13&#176;</span>
+                        <span>
+    <ul class="variations">
+      <li>CLEAR</li>
+      <li><span class="speed">9<span class="mph">mph</span></span>
+                        </li>
+                        <li class="alert">No alerts</li>
+                        </ul>
+                        </span>
+
+                    </div>
+                    <div class="card">
+                        <span class="city">Blue Springs</span>
+                        <ul class="menu">
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                        </ul>
+                        <br>
+                        <div class="cloudy"></div>
+                        <span class="temp">13&#176;</span>
+                        <span>
+    <ul class="variations">
+      <li>CLOUDY</li>
+      <li><span class="speed">20<span class="mph">mph</span></span>
+                        </li>
+                        <li class="alert">No alerts</li>
+                        </ul>
+                        </span>
+
+                    </div>
+                    <div class="card">
+                        <span class="city">Concordia</span>
+                        <ul class="menu">
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                        </ul>
+                        <br>
+                        <div class="cloudy"></div>
+                        <span class="temp">13&#176;</span>
+                        <span>
+    <ul class="variations">
+      <li>CLOUDY</li>
+      <li><span class="speed">21<span class="mph">mph</span></span>
+                        </li>
+                        <li class="alert">No alerts</li>
+                        </ul>
+                        </span>
+
+                    </div>
+                    <div class="card">
+                        <span class="city">Columbia</span>
+                        <ul class="menu">
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                        </ul>
+                        <br>
+                        <div class="cloudy"></div>
+                        <span class="temp">14&#176;</span>
+                        <span>
+    <ul class="variations">
+      <li>CLOUDY</li>
+      <li><span class="speed">6<span class="mph">mph</span></span>
+                        </li>
+                        <li class="alert">No alerts</li>
+                        </ul>
+                        </span>
+
+                    </div>
+                    <div class="card">
+                        <span class="city">St.Charles</span>
+                        <ul class="menu">
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                        </ul>
+                        <br>
+                        <div class="cloudy"></div>
+                        <span class="temp">14&#176;</span>
+                        <span>
+    <ul class="variations">
+      <li>CLOUDY</li>
+      <li><span class="speed">9<span class="mph">mph</span></span>
+                        </li>
+                        <li class="alert">Severe Thunderstorm Watch</li>
+                        </ul>
+                        </span>
+
+                    </div>
+                    <div class="card">
+                        <span class="city">St.Louis</span>
+                        <ul class="menu">
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                        </ul>
+                        <br>
+                        <div class="cloudy"></div>
+                        <span class="temp">13&#176;</span>
+                        <span>
+    <ul class="variations">
+      <li>CLOUDY</li>
+      <li><span class="speed">12<span class="mph">mph</span></span>
+                        </li>
+                        <li class="alert">High Wind Alert</li>
+                        </ul>
+                        </span>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+</body>
+
+</html>
+
+
+<script>
+    window.onload = function () {
+        document.getElementById("head").innerHTML = ' ';
+        document.getElementById('loc1').style.visibility = 'hidden';
+        document.getElementById('loc2').style.visibility = 'hidden';
+        document.getElementById('temp1').style.visibility = 'hidden';
+        document.getElementById('temp2').style.visibility = 'hidden';
+        document.getElementById('cardcontainer').style.visibility = 'hidden';
+
+    };
+    angular.module('GoogleDirection', [])
+        .controller('googlemapoutput', function ($scope, $http) {
+            var map;
+            var mapOptions;
+            var directionsDisplay = new google.maps.DirectionsRenderer({
+                draggable: true
+            });
+            var directionsService = new google.maps.DirectionsService();
+            $scope.initialize = function () {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var pos = new google.maps.LatLng(
+                        position.coords.latitude,
+                        position.coords.longitude);
+                    var mapOptions = {
+                        zoom: 16,
+                        center: pos
+                    };
+                    map = new google.maps.Map(document.getElementById('map-canvas'),
+                        mapOptions);
+                    var marker = new google.maps.Marker({
+                        position: pos,
+                        map: map
+                    });
+                });
+            };
+            $scope.calcRoute = function () {
+                var end = document.getElementById('endlocation').value;
+                var start = document.getElementById('startlocation').value;
+                document.getElementById('loc1').innerHTML = start;
+                if (start.length == 0) {
+                    document.getElementById('startlocation').value = 'Kansas City'
+                    start = 'kansas City';
+                    document.getElementById('loc1').innerHTML = 'kansas City';
+                }
+                document.getElementById('loc2').innerHTML = end;
+                //document.getElementById('loc1').style.visibility = 'visible';
+                document.getElementById('cardcontainer').style.visibility = 'visible';
+                var url1 = 'http://api.openweathermap.org/data/2.5/weather?q=' + start;
+                var url2 = 'http://api.openweathermap.org/data/2.5/weather?q=' + end;
+                $http.get(url1).
+                success(function (data) {
+                    //document.getElementById('temp1').innerHTML = '13c';
+                });
+                $http.get(url2).
+                success(function (data) {
+                    t2 = data.main.temp;
+                    //document.getElementById('temp2').innerHTML = '9c';
+                });
+                // document.getElementById('temp1').style.visibility = 'visible';
+                //document.getElementById('temp2').style.visibility = 'visible';
+
+                var request = {
+                    origin: start,
+                    destination: end,
+                    travelMode: google.maps.TravelMode.DRIVING
+                };
+                directionsService.route(request, function (response, status) {
+                    if (status == google.maps.DirectionsStatus.OK) {
+                        directionsDisplay.setMap(map);
+                        directionsDisplay.setDirections(response);
+                        console.log(status);
+                    }
+
+                });
+            };
+            google.maps.event.addDomListener(window, 'load', $scope.initialize);
+        });
+</script>
